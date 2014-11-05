@@ -20,8 +20,8 @@ int main()
 	circ_buffer<circ_buffer_VideoData> *videoringBuffer = new circ_buffer<circ_buffer_VideoData>(100);
 	circ_buffer<circ_buffer_TiepieData> *tiepieringBuffer = new circ_buffer<circ_buffer_TiepieData>(100);
 	circ_buffer<circ_buffer_TrakstarData> *trakstarringBuffer = new circ_buffer<circ_buffer_TrakstarData>(100);
+	double acquisitionTime = 30; // (sec)
 
-	int numberIterations = 20; 
 	Timer  timer;
 	timer.start();	// in future use boost timer
 
@@ -31,10 +31,24 @@ int main()
 	saveVideo saveVid(videoringBuffer,&timer); 
 
 	captureTrakstar capTrak(trakstarringBuffer,&timer); 
+
+	double df_TrakStar = 80; // (Hz)
+	int recordLength_TrakStar = ceil( df_TrakStar * acquisitionTime );
+	capTrak.Initialize("id", recordLength_TrakStar, df_TrakStar  );
+
+
+
 	//showTrakstar showTrak(trakstarringBuffer,&timer); 
 	saveTrakstar savetrak(trakstarringBuffer,&timer); 
 
 	captureTiepie capTiepie(tiepieringBuffer,&timer); 
+	// initialize Tiepie object	
+
+	double df_Tiepie = 1000.0; // (Hz)
+	double sensCh1_Tiepie = 1.0;
+	dword recordLength_Tiepie = (dword) ceil( df_Tiepie * acquisitionTime );
+	capTiepie.Initialize("Wdd",  recordLength_Tiepie, sensCh1_Tiepie, df_Tiepie  );
+
 //	showTiepie showTiepie(tiepieringBuffer,&timer); 
 	saveTiepie savetiepie(tiepieringBuffer,&timer); 
 
