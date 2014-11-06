@@ -1,18 +1,13 @@
 #ifndef circ_buffer_H_DEF
 #define circ_buffer_H_DEF
 
-#include <iostream>            // c++ I/O
-
-#include "opencv2/opencv.hpp"
-
-#include <windows.h>          // for HANDLE
-#include <process.h>          // for _beginthread()
 
 #include <boost/thread/condition.hpp>
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/circular_buffer.hpp>
-
+#include <vnl/vnl_vector.h>
+#include <vnl/vnl_matrix.h>
 // Thread safe circular buffer 
 template <typename T>
 class circ_buffer : private boost::noncopyable
@@ -32,6 +27,13 @@ public:
       buffer_not_empty.wait(lk);
     T imdata = cb.front();
     cb.pop_front();
+    return imdata;
+  }
+	  T back() {
+    lock lk(monitor);
+    while (cb.empty())
+      buffer_not_empty.wait(lk);
+    T imdata = cb.back();
     return imdata;
   }
   void clear() {

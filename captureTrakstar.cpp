@@ -13,173 +13,24 @@
 #include "Timer.h"
 #include "vnl/vnl_matrix.h"
 #include "vnl/vnl_vector.h"
-#include <ATC3DG.h>
-#include <sample2.h>
 
+#include "trakstarThread.h"
 
-struct circ_buffer_TrakstarData 
+captureTrakstar::captureTrakstar(){};
+
+captureTrakstar::captureTrakstar( circ_buffer<circ_buffer_TrakstarData>* buff, Timer *timer )
 {
-	std::vector<vnl_matrix<double>> _measures;
-	LARGE_INTEGER currentCount;
-};
-
-class showTrakstar 
-{
-  circ_buffer<circ_buffer_TrakstarData>* m_ringBuffer;
-  
-public:
-	showTrakstar(){};
-
-  showTrakstar( circ_buffer<circ_buffer_TrakstarData>* buff , Timer *timer)
-  {
-    m_ringBuffer = buff;
-  }
-
-	void operator () ()
-	{
-    circ_buffer_TrakstarData frame;
-    int itr = 0;
-    for (;;)
-    {
-    }
-   }
-};
-
-class saveTrakstar 
-{
-  circ_buffer<circ_buffer_TrakstarData>* m_ringBuffer;
-  
-public:
-	saveTrakstar(){};
-
-  saveTrakstar( circ_buffer<circ_buffer_TrakstarData>* buff, Timer *timer )
-  {
-    m_ringBuffer = buff;
-  }
-
-	void operator () ()
-	{
-    circ_buffer_TrakstarData frame;
-    int itr = 0;
-    for (;;)
-    {
-    }
-   }
-};
-
-class captureTrakstar
-
-{
-private:
-
-	//	SharedObjects* m_sharedobjs;
-	Timer *m_timer;
-	bool _bTrakstarFound;
-	bool _bTrakstarReady;
-	int _numSamples;
-	int _numSensors;
-	double _samplingFreq;
-
-	std::vector<vnl_matrix<double>> _measures;
-
-	std::vector<int> _sensorID;
-	int _transmitterID;
-	int errorCode;
-
-  CSensor			*_pSensor;
-  CSystem			_ATC3DG;
+	m_ringBuffer = buff;
+	m_timer=timer;
+}
 
 
 
-public:
-  circ_buffer<circ_buffer_TrakstarData>* m_ringBuffer;
-	captureTrakstar(){};
 
-	captureTrakstar( circ_buffer<circ_buffer_TrakstarData>* buff, Timer *timer )
-  {
-    m_ringBuffer = buff;
-  }
+captureTrakstar::~captureTrakstar(){};
 
 
-
-	void StartRecorderThread()
-	{
-
-		do 
-		{
-		} while (1);
-
-	};
-	~captureTrakstar(){};
-	static void StaticFunction()
-	{
-		//for (int i=0; i < 10; i++)  // Hard-coded upper limit
-		//{
-		//	cout<<i<<"Do something in parallel (Static function)."<<endl;
-
-		//	boost::this_thread::yield(); // 'yield' discussed in section 18.6
-		//}
-	}
-	void operator () ()
-	{
-		//for (int i=0; i<12; i++)
-		//{
-		//	cout<<i<<" - Do something in parallel ddddddd (operator() )."<<endl;
-		//	boost::this_thread::yield(); // 'yield' discussed in section 18.6
-		//}
-		std::cout << "Trakstar capture started" << std::endl;
-   
-		RecordPositionData();
-	}
-
-
-	void SetMeasures(std::vector<vnl_matrix<double>> var )
-  {
-    _measures = var;
-  }
-	/*!
-	 * \brief  Sets  
-	 *
-	 * Remarks
-	 *
-	 */
-	std::vector<vnl_matrix<double>>  GetMeasures()
-	{
-		return _measures;
-	}
-
-
-		bool isTrakstarFound(){return _bTrakstarFound;}
-
-
-	void SetNumSamples(int numSamples)
-	{
-		_numSamples=numSamples;
-	}
-
-	void SetNumSensors(int numSensors)
-	{
-		_numSensors=numSensors;
-	}
-
-	int GetNumSensors()
-	{
-		return _numSensors;
-	}
-	void SetsamplingFreq(double samplingFreq)
-	{
-		_samplingFreq=samplingFreq;
-	}
-
-
- // void errorHandler(int error);
- // void PrintSystemParamters();
- // void PrintSensorParameters(int sensorID);
-	//void PrintTransmitterParameters(int transmitterID);
- // void RecordPositionData();
-
-
-void Initialize(const char *fmt=NULL, ...)
+void captureTrakstar::Initialize(const char *fmt, ...)
 
 {
   /*!
@@ -248,7 +99,7 @@ void Initialize(const char *fmt=NULL, ...)
 };
 
 
-void RecordPositionData()
+void captureTrakstar::RecordPositionData()
 {
 	if ( _bTrakstarReady )
 	{
@@ -262,14 +113,18 @@ void RecordPositionData()
 		std::cout << "TrakStar started recording at: " << m_timer->getElapsedTimeInSec() << " sec." << std::endl;
 	
     // prepare the vector containing the measurements
-    vnl_matrix<double> currentMeasures( _numSamples, 7, -1.0 );
+  
+		circ_buffer_TrakstarData TrakstarData;
+	
+		
+		vnl_matrix<double> currentMeasures( _numSamples, 7, -1.0 );
     for ( int sensorItr = 0; sensorItr < _sensorID.size(); sensorItr++ )
     {
       _measures.push_back( currentMeasures );
     }
-
-   
-		for (int idxMeasure = 0; idxMeasure < _numSamples; ++idxMeasure) // change name to possibly idxSlot
+		int idxMeasure = 0;
+   	do 
+		//for (int idxMeasure = 0; idxMeasure < _numSamples; ++idxMeasure) // change name to possibly idxSlot
 		{
       for ( int sensorItr = 0; sensorItr < _sensorID.size(); sensorItr++ )
       {
@@ -308,6 +163,18 @@ void RecordPositionData()
           // update measurements vector
           _measures[sensorItr] = currentMeasures;
 
+				if(sensorItr==0)
+					TrakstarData.measuresCH1=*currentMeasures[idxMeasure];
+				else
+					if(sensorItr==1)
+						TrakstarData.measuresCH2=*currentMeasures[idxMeasure];
+					else
+						if(sensorItr==2)
+							TrakstarData.measuresCH3=*currentMeasures[idxMeasure];
+						else
+							if(sensorItr==3)
+								TrakstarData.measuresCH4=*currentMeasures[idxMeasure];
+			
           // wait at least half a sampling period of the TrakStar system
           // The wait time is a bit arbritary. Should change to Synchronous record (Alex 01-May)
 				  while ( m_timer->getElapsedTimeInSec() - currentTime < 0.5/_samplingFreq )
@@ -320,7 +187,11 @@ void RecordPositionData()
 				  std::cout << "Sensor status not valid." << std::endl;
 			  }
       }
-		}
+			m_ringBuffer->send( TrakstarData );
+			idxMeasure++;
+			idxMeasure=idxMeasure%_numSamples;
+			
+		} while (1);
 		//m_OutputData->TrakstarObjects::SetMeasures(_measures);
 		SET_SYSTEM_PARAMETER(SELECT_TRANSMITTER,	-1);
 	}
@@ -329,7 +200,7 @@ void RecordPositionData()
 	printf("Switch off transmitter\n");
 }
 
-void errorHandler(int error)
+void captureTrakstar::errorHandler(int error)
 {
 	char			buffer[1024];
 	char			*pBuffer = &buffer[0];
@@ -375,7 +246,7 @@ void errorHandler(int error)
 
 	exit(0);
 }
-void PrintSystemParamters()
+void captureTrakstar::PrintSystemParamters()
 {
 	int				errorCode;		// used to hold error code returned from procedure call
 	printf("GetSystemParameter()");
@@ -435,7 +306,7 @@ void PrintSystemParamters()
 		printf("METRIC: %d\n\n", buffer);
 	}
 }
-void PrintSensorParameters(int sensorID)
+void captureTrakstar::PrintSensorParameters(int sensorID)
 {
 	int				errorCode;		// used to hold error code returned from procedure call
 	//////////////////////////////////////////////////////////////////////////////
@@ -572,7 +443,7 @@ void PrintSensorParameters(int sensorID)
 			);
 	}
 }
-void PrintTransmitterParameters(int transmitterID)
+void captureTrakstar::PrintTransmitterParameters(int transmitterID)
 {
 	int				errorCode;		// used to hold error code returned from procedure call
 	//////////////////////////////////////////////////////////////////////////////
@@ -613,7 +484,3 @@ void PrintTransmitterParameters(int transmitterID)
 	}
 }
 
-public:
-
- 	private:
-};

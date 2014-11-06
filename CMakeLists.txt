@@ -17,17 +17,34 @@ SET (EXT_hdr
 SET (EXT_files  
 	$ENV{BME_BASE_DIR}/TiePie/Source/tiepiedll.cpp
 	)
-
-SET( MultiThreadFiles
-	mainMultiThreading.cpp
-	captureTrakstar.txx
-	captureTiepie.txx
-	captureVideo.txx
+SET( MultiThreadBaseFiles 
+	videoThread.h
+	trakstarThread.h
+	tiepieThread.h
+	captureVideo.cpp
+	captureTrakstar.cpp
+	captureTiepie.cpp
+	showVideo.cpp
+	showTrakstar.cpp
+	showTiepie.cpp
+	saveVideo.cpp
+	saveTrakstar.cpp
+	saveTiepie.cpp
 	circ_buffer.txx
 	$ENV{NIG_COMMON_DIR}/../Timer/Timer.cpp
 	$ENV{NIG_COMMON_DIR}/../Timer/Timer.h
 	${EXT_hdr}
 	${EXT_files}
+ 	)
+
+SET( MultiThreadFiles
+	mainMultiThreading.cpp
+	${MultiThreadBaseFiles}
+	)
+
+SET( MultiThreadTestFiles
+	mainMultiThreadingTest.cpp
+	${MultiThreadBaseFiles}
  	)
 
 # common stuff
@@ -43,7 +60,10 @@ LINK_DIRECTORIES ($ENV{BME_BASE_DIR}/Ascension/Lib)
 INCLUDE_DIRECTORIES($ENV{BME_BASE_DIR}/Ascension/Include)
 INCLUDE_DIRECTORIES($ENV{BME_BASE_DIR}/TiePie/include)
 
+ADD_EXECUTABLE( MultiThreadTest ${MultiThreadTestFiles})
+TARGET_LINK_LIBRARIES ( MultiThreadTest ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBS} ATC3DG )
 ADD_EXECUTABLE( MultiThread ${MultiThreadFiles})
-TARGET_LINK_LIBRARIES ( MultiThread ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBS} ATC3DG vnl vcl)
+TARGET_LINK_LIBRARIES ( MultiThread ${ITK_LIBRARIES} ${VTK_LIBRARIES} ${OpenCV_LIBS} ATC3DG )
+
 
 
