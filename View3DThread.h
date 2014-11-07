@@ -5,7 +5,7 @@
 #include "Timer.h"
 #include "circ_buffer.txx"
 #include "opencv2/opencv.hpp"
-#include "itkNumericSeriesFileNames.h"
+//#include "itkNumericSeriesFileNames.h"
 #include "tiepieThread.h"
 #include "trakstarThread.h"
 #include "videoThread.h"

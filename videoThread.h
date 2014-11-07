@@ -4,7 +4,7 @@
 #include "Timer.h"
 #include "circ_buffer.txx"
 #include "opencv2/opencv.hpp"
-#include "itkNumericSeriesFileNames.h"
+//#include "itkNumericSeriesFileNames.h"
 
 struct circ_buffer_VideoData 
 {
@@ -28,7 +28,7 @@ public:
 class saveVideo 
 {
 	circ_buffer<circ_buffer_VideoData>* m_ringBuffer;
-	itk::NumericSeriesFileNames::Pointer m_numericSeriesFileNames; 
+	//itk::NumericSeriesFileNames::Pointer m_numericSeriesFileNames; 
 	std::string m_BasePath;
 	std::string m_BaseImageFileName;
 	std::string m_BaseImageExtension;
