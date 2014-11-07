@@ -79,7 +79,7 @@ int main( int argc, char** argv )
   boost::thread tvid1(captureVideoThread); 
   //boost::thread tvid2(showVideoThread); 
   boost::thread tvid3(saveVideoThread);
-  //boost::thread tV3d(View3DThread);
+  boost::thread tV3d(View3DThread);
   boost::thread ttrak1(captureTrakstarThread); 
   //boost::thread ttrak2(showTrakstarThread); 
   boost::thread ttrak3(savetrakstarThread); 	

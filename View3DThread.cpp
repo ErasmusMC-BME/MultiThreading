@@ -77,6 +77,7 @@
 #include "vtkCamera.h"
 #include "vtkImageData.h"
 #include "vtkImageImport.h"
+#include "vtkImageCast.h"
 
 
 #include "View3DThread.h"
@@ -121,12 +122,18 @@ View3D::View3D( circ_buffer<circ_buffer_VideoData>* buffvideo ,  circ_buffer<cir
 	_PreviousiplImg=NULL;
 	_ActualiplImg=NULL;
 
-	_importer = vtkSmartPointer<vtkImageImport>::New();
+	//_GrabberPlaneRenderWindow->SetSize( 255,255);
+ // _GrabberPlaneRenderWindow->Render();
+
+ // _GrabberPlaneInteractor ->Start(
+ 	_importer = vtkSmartPointer<vtkImageImport>::New();
 	_GrabberPlaneimageActor =	vtkSmartPointer<vtkImageActor>::New();
 	_GrabberPlaneMapper = vtkSmartPointer<vtkImageMapToColors>::New();
 	_GrabberPlaneRenderer = vtkSmartPointer<vtkRenderer>::New();
 	_GrabberPlaneRenderWindow = vtkSmartPointer<vtkRenderWindow>::New();
-		std::string fileName = "D:/Data/ExperimentalData/EPExperiments/EP1_24-Feb-2014/consecutiveInputDataNC/IM_0007/600Images/2DinputImage_0584.png";
+		_GrabberPlaneRenderWindow->SetSize( 255,255);
+	 vtkSmartPointer<vtkImageImport> importer = vtkSmartPointer<vtkImageImport>::New();
+	std::string fileName = "D:/Data/ExperimentalData/EPExperiments/EP1_24-Feb-2014/consecutiveInputDataNC/IM_0007/600Images/2DinputImage_0584.png";
 	vtkSmartPointer<vtkPNGReader> reader = vtkPNGReader::New();
 	reader->SetFileName( fileName.c_str() );
 	reader->Update();
@@ -191,7 +198,6 @@ View3D::View3D( circ_buffer<circ_buffer_VideoData>* buffvideo ,  circ_buffer<cir
   // renderer
 
 	
-  _GrabberPlaneRenderer->AddActor(_GrabberPlaneimageActor);
   _GrabberPlaneRenderer->AddActor(actor);
 	_GrabberPlaneRenderer->AddActor(actor2);
 
@@ -199,36 +205,52 @@ View3D::View3D( circ_buffer<circ_buffer_VideoData>* buffvideo ,  circ_buffer<cir
   _GrabberPlaneRenderWindow->AddRenderer(_GrabberPlaneRenderer);
 	_GrabberPlaneInteractor =    vtkSmartPointer<vtkRenderWindowInteractor>::New();
   _GrabberPlaneRenderWindow->SetInteractor( _GrabberPlaneInteractor );
-
-	//_GrabberPlaneRenderWindow->SetSize( 255,255);
- // _GrabberPlaneRenderWindow->Render();
-
- // _GrabberPlaneInteractor ->Start(
+	
+	//IplImage* _ActualiplImg =cvCloneImage(&(IplImage)frame.Mat);
+	//fromIpl2Vtk( _ActualiplImg, importer ) ;
+	//vtkSmartPointer<vtkImageCast> castFilter =   vtkSmartPointer<vtkImageCast>::New();
+//	castFilter->SetInput(importer->GetOutput());
+	//castFilter->SetOutputScalarTypeToUnsignedChar();
+	//castFilter->Update(); 
+	//_GrabberPlaneimageActor->SetInput(castFilter->GetOutput());
 
 
 }
+	//boost::thread deep_thought_2(WindowThreadEntryPoint,	m_VideoRingBuffer,_GrabberPlaneRenderer,_GrabberPlaneMapper,_GrabberPlaneimageActor,_GrabberPlaneInteractor , _GrabberPlaneRenderWindow);
 
-void WindowThreadEntryPoint(circ_buffer<circ_buffer_VideoData>*	m_VideoRingBuffer, vtkSmartPointer<vtkImageActor> _GrabberPlaneimageActor,vtkSmartPointer<vtkRenderWindowInteractor> _GrabberPlaneInteractor ,	vtkSmartPointer<vtkRenderWindow> _GrabberPlaneRenderWindow)
+void WindowThreadEntryPoint(circ_buffer<circ_buffer_VideoData>*	m_VideoRingBuffer,vtkSmartPointer<vtkRenderer> _GrabberPlaneRenderer, vtkSmartPointer<vtkImageMapToColors> _GrabberPlaneMapper, vtkSmartPointer<vtkImageActor> _GrabberPlaneimageActor,vtkSmartPointer<vtkRenderWindowInteractor> _GrabberPlaneInteractor ,	vtkSmartPointer<vtkRenderWindow> _GrabberPlaneRenderWindow)
 {
 	circ_buffer_VideoData frame;
 	
-	_GrabberPlaneRenderWindow->SetSize( 255,255);
-	 vtkSmartPointer<vtkImageImport> importer = vtkSmartPointer<vtkImageImport>::New();
+
 	for (;;)
 	{
-		if ( m_VideoRingBuffer->size() > 2 )
+		if ( m_VideoRingBuffer->size() > 1 )
 		{
-			frame = m_VideoRingBuffer->back();
+			vtkSmartPointer<vtkImageImport> importer = vtkSmartPointer<vtkImageImport>::New();
 			IplImage* _ActualiplImg =cvCloneImage(&(IplImage)frame.Mat);
 			fromIpl2Vtk( _ActualiplImg, importer ) ;
+			vtkSmartPointer<vtkImageCast> castFilter =   vtkSmartPointer<vtkImageCast>::New();
+			castFilter->SetInput(importer->GetOutput());
+			castFilter->SetOutputScalarTypeToUnsignedChar();
+			castFilter->Update(); 
+			_GrabberPlaneimageActor->SetInput(castFilter->GetOutput());
 
-			_GrabberPlaneimageActor->SetInput(importer->GetOutput());
-			_GrabberPlaneRenderWindow->Render();
+			 _GrabberPlaneRenderer->AddActor(_GrabberPlaneimageActor);
+			 _GrabberPlaneRenderWindow->Render();
 			_GrabberPlaneInteractor->Start();
+			break;
 		}
+	}
+	for (;;)
+	{
 	}
 };
 
+void wait(int seconds) 
+{ 
+	boost::this_thread::sleep(boost::posix_time::seconds(seconds)); 
+} 
 void View3D::ThreadEntryPoint () 
 {
 
@@ -236,8 +258,8 @@ void View3D::ThreadEntryPoint ()
 	int itr = 0;
 	//cv::namedWindow( "threadedVideoShow",  cv::WINDOW_AUTOSIZE );
 //	boost::thread tvid1(&View3D::WindowThreadEntryPoint); 
-	boost::thread deep_thought_2(WindowThreadEntryPoint,	m_VideoRingBuffer,_GrabberPlaneimageActor,_GrabberPlaneInteractor , _GrabberPlaneRenderWindow);
-
+	boost::thread deep_thought_2(WindowThreadEntryPoint,	m_VideoRingBuffer,_GrabberPlaneRenderer,_GrabberPlaneMapper,_GrabberPlaneimageActor,_GrabberPlaneInteractor , _GrabberPlaneRenderWindow);
+	wait(2); 
 //  m_thread=new boost::thread(boost::ref(*this)); 
 	for (;;)
 	{
@@ -250,7 +272,10 @@ void View3D::ThreadEntryPoint ()
 		
 		_ActualiplImg=cvCloneImage(&(IplImage)frame.Mat);
 		fromIpl2Vtk( _ActualiplImg, _importer ) ;
-
+		vtkSmartPointer<vtkImageCast> castFilter =   vtkSmartPointer<vtkImageCast>::New();
+		castFilter->SetInput(_importer->GetOutput());
+		castFilter->SetOutputScalarTypeToUnsignedChar();
+		castFilter->Update();
 		_GrabberPlaneimageActor->SetInput(_importer->GetOutput());
 		//_GrabberPlaneimageActor->GetMapper()->Modified();
 	//	_GrabberPlaneimageActor->GetMapper()->Update();
@@ -262,7 +287,7 @@ void View3D::ThreadEntryPoint ()
 			//cv::Scalar meanVal = cv::mean( frame.Mat, cv::Mat() );
 		//	std::cout << "GET frame at iteration " << itr << ". Buffer size: " << m_ringBuffer->size() << ". Mean intensity in frame: " << meanVal[0] << std::endl;
 			++itr;
-
+#if 0
 		 try 
 		 { 
 			// Interrupt can only occur in wait/sleep or  
@@ -277,7 +302,7 @@ void View3D::ThreadEntryPoint ()
 			cout<<"- Thread interrupted. Exiting thread."<<endl; 
 			break; 
 		 } 
-
+#endif
 
 
 		}
