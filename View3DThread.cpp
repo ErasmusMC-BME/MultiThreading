@@ -60,7 +60,6 @@
 #include <vtkParametricSpline.h>
 #include <vtkPlaneSource.h>
 #include <vtkImageProperty.h>
-#include <utility.h>
 
 #include "vtkSmartPointer.h"
 #include "vtkPNGReader.h"
@@ -119,8 +118,10 @@ View3D::View3D( circ_buffer<circ_buffer_VideoData>* buffvideo ,  circ_buffer<cir
 	m_VideoRingBuffer = buffvideo;
 	m_TrakstarRingBuffer = buffTrakstar;
 	m_TiepieingBuffer = buffTiepie;
+	_PreviousiplImg=NULL;
+	_ActualiplImg=NULL;
 
-
+	_importer = vtkSmartPointer<vtkImageImport>::New();
 	_GrabberPlaneimageActor =	vtkSmartPointer<vtkImageActor>::New();
 	_GrabberPlaneMapper = vtkSmartPointer<vtkImageMapToColors>::New();
 	_GrabberPlaneRenderer = vtkSmartPointer<vtkRenderer>::New();
@@ -207,13 +208,25 @@ View3D::View3D( circ_buffer<circ_buffer_VideoData>* buffvideo ,  circ_buffer<cir
 
 }
 
-void WindowThreadEntryPoint(vtkSmartPointer<vtkRenderWindowInteractor> _GrabberPlaneInteractor ,	vtkSmartPointer<vtkRenderWindow> _GrabberPlaneRenderWindow)
+void WindowThreadEntryPoint(circ_buffer<circ_buffer_VideoData>*	m_VideoRingBuffer, vtkSmartPointer<vtkImageActor> _GrabberPlaneimageActor,vtkSmartPointer<vtkRenderWindowInteractor> _GrabberPlaneInteractor ,	vtkSmartPointer<vtkRenderWindow> _GrabberPlaneRenderWindow)
 {
-
+	circ_buffer_VideoData frame;
 	
 	_GrabberPlaneRenderWindow->SetSize( 255,255);
-  _GrabberPlaneRenderWindow->Render();
-  _GrabberPlaneInteractor->Start();
+	 vtkSmartPointer<vtkImageImport> importer = vtkSmartPointer<vtkImageImport>::New();
+	for (;;)
+	{
+		if ( m_VideoRingBuffer->size() > 2 )
+		{
+			frame = m_VideoRingBuffer->back();
+			IplImage* _ActualiplImg =cvCloneImage(&(IplImage)frame.Mat);
+			fromIpl2Vtk( _ActualiplImg, importer ) ;
+
+			_GrabberPlaneimageActor->SetInput(importer->GetOutput());
+			_GrabberPlaneRenderWindow->Render();
+			_GrabberPlaneInteractor->Start();
+		}
+	}
 };
 
 void View3D::ThreadEntryPoint () 
@@ -223,7 +236,7 @@ void View3D::ThreadEntryPoint ()
 	int itr = 0;
 	//cv::namedWindow( "threadedVideoShow",  cv::WINDOW_AUTOSIZE );
 //	boost::thread tvid1(&View3D::WindowThreadEntryPoint); 
-	boost::thread deep_thought_2(WindowThreadEntryPoint,_GrabberPlaneInteractor , _GrabberPlaneRenderWindow);
+	boost::thread deep_thought_2(WindowThreadEntryPoint,	m_VideoRingBuffer,_GrabberPlaneimageActor,_GrabberPlaneInteractor , _GrabberPlaneRenderWindow);
 
 //  m_thread=new boost::thread(boost::ref(*this)); 
 	for (;;)
@@ -231,19 +244,19 @@ void View3D::ThreadEntryPoint ()
 		if ( m_VideoRingBuffer->size() > 2 )
 		{
 			frame = m_VideoRingBuffer->back();
-			cv::imshow( "threadedVideoShow", frame.Mat );
-			cv::waitKey(10);
+			//cv::imshow( "threadedVideoShow", frame.Mat );
+			//cv::waitKey(10);
 
+		
+		_ActualiplImg=cvCloneImage(&(IplImage)frame.Mat);
+		fromIpl2Vtk( _ActualiplImg, _importer ) ;
 
-		vtkSmartPointer<vtkImageImport> importer = vtkSmartPointer<vtkImageImport>::New();
-		IplImage* iplImg=cvCloneImage(&(IplImage)frame.Mat);
-		fromIpl2Vtk( iplImg, importer ) ;
-
-		_GrabberPlaneimageActor->SetInput(importer->GetOutput());
-		_GrabberPlaneimageActor->GetMapper()->Modified();
-		_GrabberPlaneimageActor->GetMapper()->Update();
-		_GrabberPlaneRenderWindow->Render();
-		cvReleaseImage(&iplImg);
+		_GrabberPlaneimageActor->SetInput(_importer->GetOutput());
+		//_GrabberPlaneimageActor->GetMapper()->Modified();
+	//	_GrabberPlaneimageActor->GetMapper()->Update();
+		//_GrabberPlaneRenderWindow->Render();
+		if(_PreviousiplImg) cvReleaseImage(&_PreviousiplImg);
+		_PreviousiplImg=_ActualiplImg;
 
 
 			//cv::Scalar meanVal = cv::mean( frame.Mat, cv::Mat() );
