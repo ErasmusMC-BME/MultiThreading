@@ -29,11 +29,14 @@ public:
 class saveTiepie 
 {
 	circ_buffer<circ_buffer_TiepieData>* m_ringBuffer;
-
+	std::string m_BasePath;
+	std::string m_BaseImageFileName;
+	std::string m_BaseImageExtension;
 public:
 	saveTiepie();
 
 	saveTiepie( circ_buffer<circ_buffer_TiepieData>* buff , Timer *timer);
+	void Initialize(const char *fmt=NULL, ...);
 	void ThreadEntryPoint();
 	void operator () () {ThreadEntryPoint();};
 };

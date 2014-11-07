@@ -30,6 +30,8 @@ SET( MultiThreadBaseFiles
 	saveVideo.cpp
 	saveTrakstar.cpp
 	saveTiepie.cpp
+	View3DThread.cpp
+	View3DThread.h
 	circ_buffer.txx
 	$ENV{NIG_COMMON_DIR}/../Timer/Timer.cpp
 	$ENV{NIG_COMMON_DIR}/../Timer/Timer.h
@@ -44,7 +46,7 @@ SET( MultiThreadFiles
 
 SET( MultiThreadTestFiles
 	mainMultiThreadingTest.cpp
-	${MultiThreadBaseFiles}
+#${MultiThreadBaseFiles}
  	)
 
 # common stuff

@@ -31,15 +31,18 @@ public:
 class saveTrakstar 
 {
 	circ_buffer<circ_buffer_TrakstarData>* m_ringBuffer;
-
+	std::string m_BasePath;
+	std::string m_BaseImageFileName;
+	std::string m_BaseImageExtension;
 public:
 	saveTrakstar();
 
 	saveTrakstar( circ_buffer<circ_buffer_TrakstarData>* buff , Timer *timer);
+	void Initialize(const char *fmt=NULL, ...);
 	void ThreadEntryPoint();
 	void operator () () {ThreadEntryPoint();};
 };
-#endif
+
 
 class captureTrakstar
 
@@ -116,3 +119,4 @@ public:
 
 private:
 };
+#endif

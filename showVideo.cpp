@@ -23,6 +23,7 @@ void showVideo::ThreadEntryPoint ()
 			cv::waitKey(10);
 			//cv::Scalar meanVal = cv::mean( frame.Mat, cv::Mat() );
 		//	std::cout << "GET frame at iteration " << itr << ". Buffer size: " << m_ringBuffer->size() << ". Mean intensity in frame: " << meanVal[0] << std::endl;
+				std::cout << "show frame at iteration " << itr << std::endl;
 			++itr;
 		}
 	}

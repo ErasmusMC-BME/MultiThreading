@@ -6,6 +6,7 @@
 #include "videoThread.h"
 #include "tiepieThread.h"
 #include "trakstarThread.h"
+#include "View3DThread.h"
 
 //#define USEOPENCVTHREAD
 //#define USELEGOTHREAD
@@ -14,14 +15,26 @@
 //#define USERECONSTRUCTIONTHREAD
 //#define USETRAKSTARTHREAD
 
-int main()
+int main( int argc, char** argv )
 {
+
+
+	std::string m_BasePath;
+	std::string m_BaseImageFileName;
+	std::string m_BaseImageextension;
+
+	if ( argc > 3)
+	{
+		
+		m_BasePath = argv[1];;
+		m_BaseImageFileName = argv[2];
+		m_BaseImageextension = argv[3];
+	}
+
+
   std::cout << "Now in the main() function." << std::endl;
 
-#ifdef USETIEPIETHREAD
 	circ_buffer<circ_buffer_TiepieData> *tiepieringBuffer = new circ_buffer<circ_buffer_TiepieData>(100);
-#endif
-
 	circ_buffer<circ_buffer_VideoData> *videoringBuffer = new circ_buffer<circ_buffer_VideoData>(100);
 	circ_buffer<circ_buffer_TrakstarData> *trakstarringBuffer = new circ_buffer<circ_buffer_TrakstarData>(100);
 	
@@ -43,8 +56,10 @@ int main()
 
 	// Create threads
 	captureVideo captureVideoThread(videoringBuffer,&timer); 
-	showVideo showcaptureVideoThread(videoringBuffer,&timer); 
-	saveVideo savecaptureVideoThread(videoringBuffer,&timer); 
+	showVideo showVideoThread(videoringBuffer,&timer); 
+	saveVideo saveVideoThread(videoringBuffer,&timer); 
+	View3D View3DThread(videoringBuffer,trakstarringBuffer,tiepieringBuffer,&timer); 
+	boost::thread t(&View3D::StaticFunction);
 
 	captureTrakstar captureTrakstarThread(trakstarringBuffer,&timer); 
 	showTrakstar showTrakstarThread(trakstarringBuffer,&timer); 
@@ -55,18 +70,19 @@ int main()
 	showTiepie showTiepieThread(tiepieringBuffer,&timer); 
 	saveTiepie savetiepieThread(tiepieringBuffer,&timer); 
 #endif
-
 	captureTrakstarThread.Initialize("id", recordLength_TrakStar, df_TrakStar  );
+
+	saveVideoThread.Initialize("ccc", "D:/CVTest/","videoDemo",".jpg" );
 
 //Start threads
 
 	boost::thread tvid1(captureVideoThread); 
-	boost::thread tvid2(showcaptureVideoThread); 
-	boost::thread tvid3(savecaptureVideoThread);
-
-	//boost::thread ttrak1(captureTrakstarThread); 
+	//boost::thread tvid2(showVideoThread); 
+	boost::thread tvid3(saveVideoThread);
+	boost::thread tV3d(View3DThread);
+	boost::thread ttrak1(captureTrakstarThread); 
 	//boost::thread ttrak2(showTrakstarThread); 
-	//boost::thread ttrak3(savetrakstarThread); 	
+	boost::thread ttrak3(savetrakstarThread); 	
 
 #ifdef USETIEPIETHREAD	
 	captureTiepieThread.Initialize("Wdd",  recordLength_Tiepie, sensCh1_Tiepie, df_Tiepie  );
@@ -80,6 +96,7 @@ int main()
 	{
 
 	}
+	//producers.interrupt_all();
   std::cin.ignore();
 
 	return 0;

@@ -29,14 +29,18 @@ class saveVideo
 {
 	circ_buffer<circ_buffer_VideoData>* m_ringBuffer;
 	itk::NumericSeriesFileNames::Pointer m_numericSeriesFileNames; 
+	std::string m_BasePath;
+	std::string m_BaseImageFileName;
+	std::string m_BaseImageExtension;
 public:
 	saveVideo();
 
 	saveVideo( circ_buffer<circ_buffer_VideoData>* buff , Timer *timer);
+	void Initialize(const char *fmt=NULL, ...);
 	void ThreadEntryPoint();
 	void operator () () {ThreadEntryPoint();};
 };
-#endif
+
 
 
 
@@ -83,3 +87,4 @@ private:
 	cv::VideoCapture m_cap;
 
 };
+#endif

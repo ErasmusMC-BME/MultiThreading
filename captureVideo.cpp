@@ -70,14 +70,28 @@
         {
          // std::cout << frame.Mat.size();
           cv::cvtColor( frame.Mat, frame.Mat, cv::COLOR_BGR2GRAY );
-          double minVal, maxVal;
-          int minInd, maxInd;
+         // double minVal, maxVal;
+          //int minInd, maxInd;
           //cv::minMaxIdx( frame.Mat, &minVal, &maxVal, &minInd, &maxInd, cv::Mat() );
           //cv::Scalar meanVal = cv::mean( frame.Mat, cv::Mat() );
 					QueryPerformanceCounter(&frame.currentCount);
           m_ringBuffer->send( frame );
          // std::cout << "SET frame at iteration " << itr << ". Buffer size: " << m_ringBuffer->size() << ". Mean intensity in frame: " << meanVal[0] << std::endl;
+					std::cout << "SET frame at iteration " << itr << std::endl;
           ++itr;
+					try 
+					{ 
+					// Interrupt can only occur in wait/sleep or  
+					// join operation. If you don't do that,  
+					// call interuption_point(). Remove this line,  
+					// and the thread will never be interrupted. 
+					boost::this_thread::interruption_point(); 
+					} 
+					catch(const boost::thread_interrupted&) 
+					{ 
+					// Thread interruption request received, break the loop 
+					break; 
+					} 
         }
       }
     } 
