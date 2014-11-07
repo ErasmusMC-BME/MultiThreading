@@ -79,6 +79,7 @@
          // std::cout << "SET frame at iteration " << itr << ". Buffer size: " << m_ringBuffer->size() << ". Mean intensity in frame: " << meanVal[0] << std::endl;
 					std::cout << "SET frame at iteration " << itr << std::endl;
           ++itr;
+#if 0
 					try 
 					{ 
 					// Interrupt can only occur in wait/sleep or  
@@ -92,6 +93,7 @@
 					// Thread interruption request received, break the loop 
 					break; 
 					} 
+#endif
         }
       }
     } 
