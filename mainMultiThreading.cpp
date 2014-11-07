@@ -58,23 +58,24 @@ int main()
 
 	captureTrakstarThread.Initialize("id", recordLength_TrakStar, df_TrakStar  );
 
-//Start threads
 
-	boost::thread tvid1(captureVideoThread); 
-	boost::thread tvid2(showcaptureVideoThread); 
-	boost::thread tvid3(savecaptureVideoThread);
+  //Start threads
 
-	//boost::thread ttrak1(captureTrakstarThread); 
-	//boost::thread ttrak2(showTrakstarThread); 
-	//boost::thread ttrak3(savetrakstarThread); 	
+  boost::thread tvid1(captureVideoThread); 
+  //boost::thread tvid2(showVideoThread); 
+  boost::thread tvid3(saveVideoThread);
+  //boost::thread tV3d(View3DThread);
+  boost::thread ttrak1(captureTrakstarThread); 
+  //boost::thread ttrak2(showTrakstarThread); 
+  boost::thread ttrak3(savetrakstarThread); 	
 
 #ifdef USETIEPIETHREAD	
-	captureTiepieThread.Initialize("Wdd",  recordLength_Tiepie, sensCh1_Tiepie, df_Tiepie  );
-	boost::thread tTiepie1(captureTiepieThread); 
-	boost::thread tTiepie2(showTiepieThread); 
-	boost::thread tTiepie3(savetiepieThread); 
+  captureTiepieThread.Initialize("Wdd",  recordLength_Tiepie, sensCh1_Tiepie, df_Tiepie  );
+  boost::thread tTiepie1(captureTiepieThread); 
+  boost::thread tTiepie2(showTiepieThread); 
+  boost::thread tTiepie3(savetiepieThread); 
 #endif
-
+ 	
 
 	for (;;)
 	{

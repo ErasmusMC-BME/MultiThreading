@@ -14,7 +14,7 @@
 #include "vtkImageMapToColors.h"
 #include "vtkRenderer.h"
 #include "vtkRenderWindow.h"
-
+#include "vtkImageImport.h"
 
 
 class View3D 
@@ -22,7 +22,8 @@ class View3D
 	circ_buffer<circ_buffer_VideoData>*			m_VideoRingBuffer;
 	circ_buffer<circ_buffer_TrakstarData>*	m_TrakstarRingBuffer;
 	circ_buffer<circ_buffer_TiepieData>*		m_TiepieingBuffer;
-
+	IplImage* _ActualiplImg;
+	IplImage* _PreviousiplImg;
 private: 
  	public:
 
@@ -31,7 +32,7 @@ private:
 	vtkSmartPointer<vtkRenderer> _GrabberPlaneRenderer ;
 	vtkSmartPointer<vtkRenderWindow> _GrabberPlaneRenderWindow ;
 	vtkSmartPointer<vtkRenderWindowInteractor> _GrabberPlaneInteractor ;
-
+	vtkSmartPointer<vtkImageImport> _importer;
 public:
 
 	View3D();
